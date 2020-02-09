@@ -1,11 +1,20 @@
 # go-dex-trading-bot
-A trading bot for Stakenet XSN Decentralized Exchange (DEX)
+A trading bot for Stakenet XSN Decentralized Exchange (DEX) written in golang.
+
+## Create stub via protoc
+Use the following link to install the prerequisites (https://grpc.io/docs/quickstart/go/):
+1. install protoc compiler (3.6.1+) 
+2. `protoc-gen-go` compiler plugin 
+
+#### Generate a stub by using the lssdrpc.proto file
+The latest lssdrpc.proto file can be found on: https://github.com/X9Developers/DexAPI/releases
+
+Execute: 
+
+`protoc -I lssdrpc/ protobuf/lssdrpc.proto --go_out=plugins=grpc:lssdrpc`
+
+which will output a lssdrpc.rb.go that has client and server connectors automatically generated.
+
+ 
 
 
-#protoc --version -> 3.6.1
-#protoc --proto_path=lssdrpc --go_out=generated lssdrpc/lssdrpc.proto
-
-documentation
-tool: go get -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
-
-protoc --doc_out=doc --doc_opt=html,index.html  lssdrpc/lssdrpc.proto
