@@ -1,77 +1,29 @@
 {
-  "lncliPath": "/home/wintan/Desktop/QTs/appdir/usr/bin/lncli",
-  "lncliOptions": [
-    "--no-macaroons",
-    "--rpcserver=localhost:20002",
-    "--tlscertpath=/home/wintan/.local/share/Stakenet/stakenet-wallet/lnd/xsn/tls.cert"
-  ],
-  "corePath":"/home/wintan/Desktop/QTs/xsn-1.0.21/bin/xsn-cli",
-  "testRequests": true,
-  "testRequestsLightning": true,
-  "enableAuth": false,
-  "authPairs": [
-    {"Name": "xsn-test", "Password": "xsn-tech2019"},
-    {"Name": "admin", "Password": "dontblockmeiamadmin"}
-  ],
-  "GACode": "UA-137871306-1",
-  "env": "DEV",
-  "ipStackAccessKey": "db7d2440cb1748a96062cfd07c639a3f",
-  "mysqlDSL":"root:root@tcp(127.0.0.1:3306)/stakenet?parseTime=true&sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'",
-  "coins":["XSN", "XSN_TPOS"],
-  "cmcAccessKey":"42e2d64a-4d39-4352-a221-a3cabcf51f2a",
-  "treasuryAddresses": [
-    "XsXUrym97kYmgYS6dZinKy9aPBJtKjsW9s",
-    "XgHb8RcxKEVpLpGCGSfr7PBhaeyXESPohD",
-    "XdohZJJNjt58Q8bVYKniE9JqNmj5ZfviEK",
-    "XvTtMhf4BTamY1rYTYmpUABMpe3AhdzcAW",
-    "Xot47MBm9nn17dGNjPTvANVL51ckg4acrJ",
-    "7aDP2dDUBgt6cQWvwjXKraShneTfRNZHsm",
-    "7ezUJ5WGqxDJmDSU2Qjbd49XvNurMExCRz",
-    "7UH6TStnJxJTJSGkn58g9TwapowCwbrrNr",
-    "7WLZ92VMaVPV2CFATK3fFyDzwY2vrFuKGA",
-    "7YaJ7nZnXPnZc21ER4hF74jN6dm67ELhnT",
-    "XmPe9BHRsmZeThtYF34YYjdnrjmcAUn8bC",
-    "7ePSJuTA1BaUAA5tJxy5CgQnhghSLnzmY8",
-    "7ct5YBquHoe4jh5mBFUaqxENiX46FmHFDw",
-    "7oM54EDfA3Rc6vfKEJxriL5jKxayb4jy8m",
-    "Xe21pHPZP1NbVs1Sva5Mqgq4NdXDX8jL12",
-    "7XgvcffY9tw5gEoK7tvhcLjxppGwx9Erzr",
-    "7cs6r3Luw8Qce7uKbvwELLVxxN7rovzgGn",
-    "7VTLfHKRwXfo1cAFqMiHVJVpyCP6VzbgkX",
-    "7aEYMT3Pe62wqvQeaD9u5riReVruheFpSV",
-    "7VaonnUNoNSwEefLW1kJ79jhucfLGpzkxJ",
-    "7aN5dnEayXrVSg5BYTkWSUX7ZT6CBgBL2D",
-    "7gG3DqeR9Ju2dogZYtY3JYjcm8WBpCbVBN",
-    "7jWeqLyHx4KJeSmME6KBExK2LSmS3drSyf",
-    "7aptpfXD3L1EamHj5f5RPakGjUGM9ShfjZ",
-    "7eUdCo6qkxmEiNeBH3u3nR3uJTmqq78w9r",
-    "7ddQv1iAeZTgfWWoirpE8X2AK8n25WQmXZ",
-    "7ZRg1Mmjn96ccBESNZo4g8SDADgWaqBEKk",
-    "7VL1Vs2BUJtYan6StgTvg2SLyyYF9SkdhW",
-    "7nfP4LVA91Uxtc3D6p94Mgm7cM6m89fwVy",
-    "7iqUkg5u45NjXniBTFxBGk4bM9NfaLjoEH",
-    "7infjh6BUhZftDQLor2F4THEPqi7DUzzG5",
-    "7m1VYK3HyFRw8f6Wgzh2o9bMgqjMwozA7n",
-    "7mebaLtTFY19ibPsx7C6tPSXQkuWA6eisX",
-    "7VipmCb7WnnT3KKoWmjwjmyPn1irQQ8ZdZ",
-    "7ZSMpWCHmDqqYJe2h97ZFe8pQaEh516CXd",
-    "Xp6PaXBQrN6L8sVFHQYVW5rBnKApecD6vu",
-    "7XpxWeoFxvDfgszeFQRFAdnemkbVUnACt2",
-    "7XEqNt2PWPqLHnkrBpHph2mUNyBni2Ghs4",
-    "7p36bZTxjqKXV692WEE6vSv43K1yXnFiKe",
-    "Xd9zBpRipXAZ8BUkBt1y6VsWUSWniXCETS"
-  ],
-  "jobs": {
-    "cmcInterval": "5h",
-    "mnCache" : "12h",
-    "govCache" : "10m",
-    "tposCache" : "1h",
-    "lightningCache" : "2m",
-    "historyCache": "2m",
-    "treasuryHistory" : "3h",
-    "tposHistory": "24h",
-    "mnHistory": "24h",
-    "lightningHistory": "11h"
+  "lssdConfig": {
+    "host": "",
+    "port": 50051
   },
-  "dbSyncOnStart": false
+  "xsnLNDConfig": {
+    "certPath":"certs/lnd_xsn.cert",
+    "host": "localhost",
+    "port": 10003
+  },
+  "ltcLNDConfig": {
+    "certPath":"certs/lnd_ltc.cert",
+    "host": "localhost",
+    "port": 10001
+  },
+  "btcLNDConfig": {
+    "certPath":"certs/lnd_btc.cert",
+    "host": "localhost",
+    "port": 10009
+  },
+  "orders": [{
+    "side": "sell",
+    "tradingPair": "XSN_LTC",
+    "priceRangeStart": 95000,
+    "priceRangeEnd": 95005,
+    "priceRangeStepSize": 1,
+    "fixedFunding": 100000
+  }]
 }

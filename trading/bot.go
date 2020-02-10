@@ -22,10 +22,6 @@ const (
 	CurrencyBTC = "BTC"
 )
 
-type LNDConfig struct {
-	TLSPaths map[string]string // map[LTC]-> /path/to/lnd_ltc.tls.cert
-}
-
 type Bot struct {
 	OrderClient       lssdrpc.OrdersClient
 	SwapClient        lssdrpc.SwapsClient
@@ -37,66 +33,41 @@ type Bot struct {
 	CurrencyConnection    *grpc.ClientConn
 	TradingPairConnection *grpc.ClientConn
 
-	LNDConfig
-
+	LNDConfig LNDConfig
 }
 
-func (t *Bot) Init() {
-
+func (t *Bot) Init() error {
+	t.LNDConfig.Certs = make(map[string]string, 0)
+	for currency, path := range t.LNDConfig.TLSPaths {
+		b, err := ReadFile(path)
+		if err != nil {
+			return err
+		}
+		t.LNDConfig.Certs[currency] = string(b)
+	}
+	return nil
 }
 
-/*
-func (t *Bot) AddCurrency() error {
+func (t *Bot) AddCurrencies() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-
-	ReadFile(t.)
-		val tlsCertRawLTC = readFile("ltc.cert")
-		val tlsCertRawXSN = readFile("xsn.cert")
-		println("exchangeA - LTC tls")
-		println(tlsCertRawLTC)
-		println("exchangeA -XSN tls")
-		println(tlsCertRawXSN)
-		Exchange.apply(
-			lssdConfig = LssdRpcConfig("localhost", 50051),
-			lndLtcConfig =
-		LndRpcConfig(host = "localhost", port = 10001, tlsCert = tlsCertRawLTC),
-		lndXsnConfig =
-			LndRpcConfig(host = "localhost", port = 10003, tlsCert = tlsCertRawXSN)
-	)
+	for currency, cert := range t.LNDConfig.Certs {
+		c := t.LNDConfig.Connections
+		x := c[currency]
+		cr := &lssdrpc.AddCurrencyRequest{
+			Currency:   currency,
+			LndChannel: x.Format(),
+		}
+		cr.TlsCert = &lssdrpc.AddCurrencyRequest_RawCert{RawCert: cert}
+		_, err := t.CurrencyClient.AddCurrency(ctx, cr)
+		if err != nil {
+			return err
+		}
 	}
-
-	private def readFile(name: String): String = {
-		val url = getClass.getResource("/" + name)
-		val source = scala.io.Source.fromURL(url)
-		val data = source.getLines().mkString("\n")
-		source.close()
-		data
-	}
-
-
-
-
-
-
-
-
-
-	cr := &lssdrpc.AddCurrencyRequest{
-		Currency: CurrencyLTC,
-		LndChannel:
-	}
-	Currency   string `protobuf:"bytes,1,opt,name=currency,proto3" json:"currency,omitempty"`
-	LndChannel string `protobuf:"bytes,2,opt,name=lndChannel,proto3" json:"lndChannel,omitempty"`
-	// Types that are valid to be assigned to TlsCert:
-	//	*AddCurrencyRequest_CertPath
-	//	*AddCurrencyRequest_RawCert
-	TlsCert              isAddCurrencyRequest_TlsCert `protobuf_oneof:"tlsCert"`
-	t.CurrencyClient.AddCurrency(ctx, )
+	return nil
 }
 
-*/
 //Let the Bot subscribe to swaps
 func (t *Bot) SubscribeSwaps() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -148,28 +119,30 @@ func (t *Bot) ListOrders(tradingPair string, myOrders bool) ([]lssdrpc.Order, er
 		processed += uint32(len(res.Orders))
 	}
 	for i, o := range orders {
-		fmt.Printf("id: %d | pair: %s | side: %s | orderId: %s | price: %v | isMy: %v \n", i, o.PairId, o.Side, o.OrderId, o.Price, o.IsOwnOrder)
+		fmt.Printf("id: %d | pair: %s | side: %s | orderId: %s | price: %v | funds: %v | isMy: %v \n", i, o.PairId, o.Side, o.OrderId, o.Price, o.Funds, o.IsOwnOrder)
 	}
 	return orders, nil
 }
 
-func (t *Bot) PlaceOrder(tradingPair string, price int, side lssdrpc.OrderSide) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+func (t *Bot) PlaceOrder(tradingPair string, price int, amount int, side lssdrpc.OrderSide) (*lssdrpc.PlaceOrderResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 
-	p:= strconv.Itoa(price)
-
-	priceBigInt := &lssdrpc.BigInteger{Value:p}
-
+	p := strconv.Itoa(price)
+	priceBigInt := &lssdrpc.BigInteger{Value: p}
+	a := strconv.Itoa(amount)
+	amountBigInt := &lssdrpc.BigInteger{Value: a}
 	order := &lssdrpc.PlaceOrderRequest{
 		PairId: tradingPair,
-		Side: side,
-		Funds: priceBigInt,
-		Price: priceBigInt,
+		Side:   side,
+		Funds:  amountBigInt,
+		Price:  priceBigInt,
 	}
-
-	_, err := t.OrderClient.PlaceOrder(ctx, order)
-	return err
+	res, err := t.OrderClient.PlaceOrder(ctx, order)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func NewBot(
@@ -180,8 +153,12 @@ func NewBot(
 	c lssdrpc.CurrenciesClient,
 	cc *grpc.ClientConn,
 	t lssdrpc.TradingPairsClient,
-	tc *grpc.ClientConn) *Bot {
-	return &Bot{
+	tc *grpc.ClientConn,
+	lndConfig LNDConfig) (*Bot, error) {
+	if lndConfig.IsEmtpy() {
+		return nil, fmt.Errorf("lndConfig is empty")
+	}
+	b := &Bot{
 		OrderClient:           o,
 		SwapClient:            s,
 		CurrencyClient:        c,
@@ -190,9 +167,12 @@ func NewBot(
 		SwapConnection:        sc,
 		CurrencyConnection:    cc,
 		TradingPairConnection: tc,
+		LNDConfig:             lndConfig,
 	}
+	err := b.Init()
+	return b, err
 }
 
-func ReadFile (path string) ([]byte, error) {
+func ReadFile(path string) ([]byte, error) {
 	return ioutil.ReadFile(path)
 }
