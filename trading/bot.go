@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"google.golang.org/grpc"
+	"github.com/Sirupsen/logrus"
 
 	"github.com/cwntr/go-dex-trading-bot/lssdrpc"
 )
@@ -28,12 +28,8 @@ type Bot struct {
 	CurrencyClient    lssdrpc.CurrenciesClient
 	TradingPairClient lssdrpc.TradingPairsClient
 
-	OrderConnection       *grpc.ClientConn
-	SwapConnection        *grpc.ClientConn
-	CurrencyConnection    *grpc.ClientConn
-	TradingPairConnection *grpc.ClientConn
-
 	LNDConfig LNDConfig
+	Log       *logrus.Entry
 }
 
 func (t *Bot) Init() error {
@@ -73,6 +69,9 @@ func (t *Bot) SubscribeSwaps() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	_, err := t.SwapClient.SubscribeSwaps(ctx, &lssdrpc.SubscribeSwapsRequest{})
+	if err != nil {
+		t.Log.Infoln("subscribed to swaps")
+	}
 	return err
 }
 
@@ -81,6 +80,9 @@ func (t *Bot) SubscribeOrders() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	_, err := t.OrderClient.SubscribeOrders(ctx, &lssdrpc.SubscribeOrdersRequest{})
+	if err != nil {
+		t.Log.Infoln("subscribed to orders")
+	}
 	return err
 }
 
@@ -145,30 +147,33 @@ func (t *Bot) PlaceOrder(tradingPair string, price int, amount int, side lssdrpc
 	return res, nil
 }
 
-func NewBot(
-	o lssdrpc.OrdersClient,
-	oc *grpc.ClientConn,
-	s lssdrpc.SwapsClient,
-	sc *grpc.ClientConn,
-	c lssdrpc.CurrenciesClient,
-	cc *grpc.ClientConn,
-	t lssdrpc.TradingPairsClient,
-	tc *grpc.ClientConn,
-	lndConfig LNDConfig) (*Bot, error) {
+func (t *Bot) CancelOrder(tradingPair string, orderId string) (*lssdrpc.CancelOrderResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+
+	order := &lssdrpc.CancelOrderRequest{
+		PairId:  tradingPair,
+		OrderId: orderId,
+	}
+	res, err := t.OrderClient.CancelOrder(ctx, order)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func NewBot(o lssdrpc.OrdersClient, s lssdrpc.SwapsClient, c lssdrpc.CurrenciesClient, t lssdrpc.TradingPairsClient, lndConfig LNDConfig) (*Bot, error) {
 	if lndConfig.IsEmtpy() {
 		return nil, fmt.Errorf("lndConfig is empty")
 	}
 	b := &Bot{
-		OrderClient:           o,
-		SwapClient:            s,
-		CurrencyClient:        c,
-		TradingPairClient:     t,
-		OrderConnection:       oc,
-		SwapConnection:        sc,
-		CurrencyConnection:    cc,
-		TradingPairConnection: tc,
-		LNDConfig:             lndConfig,
+		OrderClient:       o,
+		SwapClient:        s,
+		CurrencyClient:    c,
+		TradingPairClient: t,
+		LNDConfig:         lndConfig,
 	}
+	b.Log = logrus.WithFields(logrus.Fields{"context": "bot"})
 	err := b.Init()
 	return b, err
 }

@@ -7,8 +7,9 @@ type LNDConfig struct {
 }
 
 type LSSDConfig struct {
-	Host string `json:"host"`
-	Port int    `json:"port"`
+	Host    string `json:"host"`
+	Port    int    `json:"port"`
+	Timeout string `json:"timeout"`
 }
 
 type Config struct {

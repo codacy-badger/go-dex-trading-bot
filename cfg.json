@@ -1,7 +1,8 @@
 {
   "lssdConfig": {
     "host": "",
-    "port": 50051
+    "port": 50051,
+    "timeout": "30s"
   },
   "xsnLNDConfig": {
     "certPath":"certs/lnd_xsn.cert",
