@@ -30,6 +30,8 @@ type Bot struct {
 
 	LNDConfig LNDConfig
 	Log       *logrus.Entry
+
+	Timeout time.Duration
 }
 
 func (t *Bot) Init() error {
@@ -45,7 +47,7 @@ func (t *Bot) Init() error {
 }
 
 func (t *Bot) AddCurrencies() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), t.Timeout)
 	defer cancel()
 
 	for currency, cert := range t.LNDConfig.Certs {
@@ -66,7 +68,7 @@ func (t *Bot) AddCurrencies() error {
 
 //Let the Bot subscribe to swaps
 func (t *Bot) SubscribeSwaps() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), t.Timeout)
 	defer cancel()
 	_, err := t.SwapClient.SubscribeSwaps(ctx, &lssdrpc.SubscribeSwapsRequest{})
 	if err != nil {
@@ -77,7 +79,7 @@ func (t *Bot) SubscribeSwaps() error {
 
 //Let the Bot subscribe to orders
 func (t *Bot) SubscribeOrders() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), t.Timeout)
 	defer cancel()
 	_, err := t.OrderClient.SubscribeOrders(ctx, &lssdrpc.SubscribeOrdersRequest{})
 	if err != nil {
@@ -88,7 +90,7 @@ func (t *Bot) SubscribeOrders() error {
 
 //Retrieves orders from the XSN DEX Orderbook by enabling the TradingPair and request the all orders
 func (t *Bot) ListOrders(tradingPair string, myOrders bool) ([]lssdrpc.Order, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), t.Timeout)
 	defer cancel()
 
 	_, err := t.TradingPairClient.EnableTradingPair(ctx, &lssdrpc.EnableTradingPairRequest{PairId: PairXSNLTC})
@@ -127,7 +129,7 @@ func (t *Bot) ListOrders(tradingPair string, myOrders bool) ([]lssdrpc.Order, er
 }
 
 func (t *Bot) PlaceOrder(tradingPair string, price int, amount int, side lssdrpc.OrderSide) (*lssdrpc.PlaceOrderResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	ctx, cancel := context.WithTimeout(context.Background(), t.Timeout)
 	defer cancel()
 
 	p := strconv.Itoa(price)
@@ -148,7 +150,7 @@ func (t *Bot) PlaceOrder(tradingPair string, price int, amount int, side lssdrpc
 }
 
 func (t *Bot) CancelOrder(tradingPair string, orderId string) (*lssdrpc.CancelOrderResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	ctx, cancel := context.WithTimeout(context.Background(), t.Timeout)
 	defer cancel()
 
 	order := &lssdrpc.CancelOrderRequest{
@@ -162,7 +164,7 @@ func (t *Bot) CancelOrder(tradingPair string, orderId string) (*lssdrpc.CancelOr
 	return res, nil
 }
 
-func NewBot(o lssdrpc.OrdersClient, s lssdrpc.SwapsClient, c lssdrpc.CurrenciesClient, t lssdrpc.TradingPairsClient, lndConfig LNDConfig) (*Bot, error) {
+func NewBot(o lssdrpc.OrdersClient, s lssdrpc.SwapsClient, c lssdrpc.CurrenciesClient, t lssdrpc.TradingPairsClient, lndConfig LNDConfig, timeout time.Duration) (*Bot, error) {
 	if lndConfig.IsEmtpy() {
 		return nil, fmt.Errorf("lndConfig is empty")
 	}
@@ -172,6 +174,7 @@ func NewBot(o lssdrpc.OrdersClient, s lssdrpc.SwapsClient, c lssdrpc.CurrenciesC
 		CurrencyClient:    c,
 		TradingPairClient: t,
 		LNDConfig:         lndConfig,
+		Timeout:           timeout,
 	}
 	b.Log = logrus.WithFields(logrus.Fields{"context": "bot"})
 	err := b.Init()

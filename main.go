@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	. "log"
 	"os"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 
@@ -24,6 +24,11 @@ func main() {
 	err := readConfig()
 	if err != nil {
 		logger.Errorf("error reading global config, err %v", err)
+		return
+	}
+	cfg.LSSDConfig.Timeout, err = time.ParseDuration(cfg.LSSDConfig.TimeoutStr)
+	if err != nil {
+		logger.Errorf("unable parsing lssd timeout, err %v", err)
 		return
 	}
 	logger.Infoln("global config loaded")
@@ -54,7 +59,7 @@ func main() {
 	logger.Infoln("trading config loaded")
 
 	//Initialize Bot
-	bot, err := trading.NewBot(oClient, sClient, cClient, tpClient, tradingCfg)
+	bot, err := trading.NewBot(oClient, sClient, cClient, tpClient, tradingCfg, cfg.LSSDConfig.Timeout)
 	if err != nil {
 		logger.Errorf("error initializing trading bot, err %v", err)
 		return

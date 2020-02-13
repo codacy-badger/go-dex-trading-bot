@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type LNDConfig struct {
 	CertPath string `json:"certPath"`
 	Host     string `json:"host"`
@@ -7,9 +9,10 @@ type LNDConfig struct {
 }
 
 type LSSDConfig struct {
-	Host    string `json:"host"`
-	Port    int    `json:"port"`
-	Timeout string `json:"timeout"`
+	Host       string `json:"host"`
+	Port       int    `json:"port"`
+	TimeoutStr string `json:"timeout"`
+	Timeout    time.Duration
 }
 
 type Config struct {
