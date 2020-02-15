@@ -9,12 +9,10 @@ Use the following link to install the prerequisites (https://grpc.io/docs/quicks
 #### Generate a stub by using the lssdrpc.proto file
 The latest lssdrpc.proto file can be found on: https://github.com/X9Developers/DexAPI/releases
 
-Execute: 
+Go to the project root, execute the following command to generate a go client 
 
-`protoc -I lssdrpc/ protobuf/lssdrpc.proto --go_out=plugins=grpc:lssdrpc`
-
+`protoc -I. --go_out=plugin=grpc=:lssdrpc  protobuf/*.protoc`
+`mv lssdrpc/protobuf/lssdrpc.pb.go lssdrpc/ && rm -R lssdrpc/protobuf`
 which will output a lssdrpc.rb.go that has client and server connectors automatically generated.
-
- 
 
 
