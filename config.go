@@ -1,11 +1,16 @@
 package main
 
-import "time"
+import (
+	"encoding/json"
+	"os"
+	"time"
+)
 
 type LNDConfig struct {
-	CertPath string `json:"certPath"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
+	Directory string `json:"lndDir"`
+	CertPath  string `json:"certPath"`
+	Host      string `json:"host"`
+	Port      int    `json:"port"`
 }
 
 type LSSDConfig struct {
@@ -15,7 +20,14 @@ type LSSDConfig struct {
 	Timeout    time.Duration
 }
 
+type BotConfig struct {
+	Host      string `json:"host"`
+	Port      int    `json:"port"`
+	LNCLIPath string `json:"lnCLIPath"`
+}
+
 type Config struct {
+	Bot        BotConfig  `json:"botCfg"`
 	LSSDConfig LSSDConfig `json:"lssdConfig"`
 	XSN        LNDConfig  `json:"xsnLNDConfig"`
 	LTC        LNDConfig  `json:"ltcLNDConfig"`
@@ -30,4 +42,20 @@ type Order struct {
 	PriceRangeEnd      int    `json:"priceRangeEnd"`
 	PriceRangeStepSize int    `json:"priceRangeStepSize"`
 	FixedFunding       int    `json:"fixedFunding"`
+}
+
+func readConfig() error {
+	file, err := os.Open("cfg.json")
+	if err != nil {
+		logger.Fatalf("can't open config file: %v", err)
+		return err
+	}
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&cfg)
+	if err != nil {
+		logger.Fatalf("can't decode config JSON: %v", err)
+		return err
+	}
+	return nil
 }
