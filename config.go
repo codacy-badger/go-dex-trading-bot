@@ -44,6 +44,16 @@ type Order struct {
 	FixedFunding       int    `json:"fixedFunding"`
 }
 
+type CancelTradingPair struct {
+	TradingPair string   `json:"tradingPair"`
+	DeleteAll   bool     `json:"deleteAll,omitempty"`
+	OrderIDs    []string `json:"orderIds,omitempty"`
+}
+
+type OrderCancel struct {
+	TradingPair []CancelTradingPair `json:"cancelTradingPairs"`
+}
+
 func readConfig() error {
 	file, err := os.Open("cfg.json")
 	if err != nil {

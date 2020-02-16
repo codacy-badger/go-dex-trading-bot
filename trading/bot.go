@@ -89,7 +89,7 @@ func (t *Bot) SubscribeOrders() error {
 }
 
 //Retrieves orders from the XSN DEX Orderbook by enabling the TradingPair and request the all orders
-func (t *Bot) ListOrders(tradingPair string, myOrders bool) ([]lssdrpc.Order, error) {
+func (t *Bot) ListOrders(tradingPair string, myOrders bool, printCLI bool) ([]lssdrpc.Order, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), t.Timeout)
 	defer cancel()
 
@@ -122,8 +122,10 @@ func (t *Bot) ListOrders(tradingPair string, myOrders bool) ([]lssdrpc.Order, er
 		}
 		processed += uint32(len(res.Orders))
 	}
-	for i, o := range orders {
-		fmt.Printf("id: %d | pair: %s | side: %s | orderId: %s | price: %v | funds: %v | isMy: %v \n", i, o.PairId, o.Side, o.OrderId, o.Price, o.Funds, o.IsOwnOrder)
+	if printCLI {
+		for i, o := range orders {
+			fmt.Printf("id: %d | pair: %s | side: %s | orderId: %s | price: %v | funds: %v | isMy: %v \n", i, o.PairId, o.Side, o.OrderId, o.Price, o.Funds, o.IsOwnOrder)
+		}
 	}
 	return orders, nil
 }
